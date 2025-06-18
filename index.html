@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -56,7 +55,7 @@
             font-size: 2em;
             font-weight: 700;
         }
-        .input-group {
+        .input-group { /* Giữ lại nếu muốn hiển thị email hiện tại */
             margin-bottom: 25px;
             text-align: left;
         }
@@ -162,7 +161,7 @@
             margin-top: 30px;
             padding: 25px;
             background-color: #f9f9f9;
-            border: 1px dashed var(--primary-blue); /* Dashed border for visual appeal */
+            border: 1px dashed var(--primary-blue);
             border-radius: 10px;
             text-align: left;
             font-size: 1em;
@@ -183,21 +182,18 @@
             display: block;
         }
 
-        /* --- CẬP NHẬT CSS ĐỂ XẾP CHỒNG VÀ ĐẢM BẢO CHIỀU RỘNG --- */
         .login-link-group {
             display: flex;
-            flex-direction: column; /* Sắp xếp các mục theo cột */
-            gap: 15px; /* Khoảng cách giữa các nút */
-            align-items: stretch; /* Đảm bảo các nút kéo dài toàn bộ chiều rộng */
+            flex-direction: column;
+            gap: 15px;
+            align-items: stretch;
         }
 
-        /* Đảm bảo cả nút và link đều có chiều rộng 100% khi xếp chồng */
         .login-link-group a,
         .login-link-group button {
             width: 100%;
-            box-sizing: border-box; /* Quan trọng để padding và border không làm tăng chiều rộng */
+            box-sizing: border-box;
         }
-        /* --- KẾT THÚC CẬP NHẬT CSS --- */
 
         .login-link-group a {
             padding: 10px 15px;
@@ -216,7 +212,7 @@
         }
 
         .copy-button {
-            background-color: #6c757d; /* Gray color for copy */
+            background-color: #6c757d;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -233,7 +229,7 @@
             transform: scale(0.98);
         }
         .copy-button.copied {
-            background-color: #28a745; /* Green when copied */
+            background-color: #28a745;
         }
 
         .link-note {
@@ -248,10 +244,10 @@
             transition: color 0.3s ease;
         }
         .countdown.warning {
-            color: #ffc107; /* Orange for warning */
+            color: #ffc107;
         }
         .countdown.danger {
-            color: #dc3545; /* Red for critical */
+            color: #dc3545;
         }
     </style>
 </head>
@@ -259,11 +255,11 @@
     <div class="container">
         <h1>Đăng nhập Perplexity.ai qua Email</h1>
         <div class="input-group">
-            <label for="emailInput">Địa chỉ Email:</label>
-            <input type="email" id="emailInput" placeholder="nhập@email.com" required>
+            <label for="emailDisplay">Email của bạn (Được cấu hình trên server):</label>
+            <input type="email" id="emailDisplay" value="vietanh94.thk@gmail.com" readonly style="background-color: #e9ecef; cursor: default;">
         </div>
-        <button id="loginButton">
-            <span id="buttonText">Gửi liên kết đăng nhập</span>
+        <button id="checkEmailButton">
+            <span id="buttonText">Kiểm tra Email để lấy Link</span>
             <div id="spinner" class="spinner"></div>
         </button>
         <div id="message" class="message"></div>
@@ -271,10 +267,8 @@
         <div id="loginResult" class="login-result">
             <strong>Liên kết đăng nhập của bạn đã sẵn sàng!</strong>
             <div class="login-link-group">
-                <!-- CẬP NHẬT THỨ TỰ HTML -->
                 <button id="copyLinkButton" class="copy-button">Copy Link</button>
                 <a id="loginLink" href="#" target="_blank" rel="noopener noreferrer">Đăng nhập Perplexity Pro</a>
-                <!-- KẾT THÚC CẬP NHẬT THỨ TỰ HTML -->
             </div>
             <p class="link-note">
                 Liên kết này chỉ có hiệu lực trong <span id="countdown" class="countdown">5:00</span> phút.
@@ -285,8 +279,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const emailInput = document.getElementById('emailInput');
-            const loginButton = document.getElementById('loginButton');
+            // const emailInput = document.getElementById('emailInput'); // Loại bỏ input email
+            const checkEmailButton = document.getElementById('checkEmailButton');
             const buttonText = document.getElementById('buttonText');
             const spinner = document.getElementById('spinner');
             const messageDiv = document.getElementById('message');
@@ -295,93 +289,78 @@
             const copyLinkButton = document.getElementById('copyLinkButton');
             const countdownElement = document.getElementById('countdown');
 
-            // Cấu hình polling
+            // Cấu hình polling cho việc kiểm tra email
+            const CHECK_EMAIL_WINDOW_MINUTES = 1; // Kiểm tra email trong 1 phút
             const POLLING_INTERVAL_MS = 3000; // Kiểm tra mỗi 3 giây
-            const POLLING_TIMEOUT_MS = 60 * 1000; // Tối đa 60 giây chờ
-            const LINK_EXPIRATION_SECONDS = 5 * 60; // 5 phút
             
+            // Cấu hình thời gian hiệu lực của link
+            const LINK_EXPIRATION_SECONDS = 5 * 60; // 5 phút
+
             let pollingInterval;
-            let pollingStartTime;
-            let countdownInterval;
-            let actualLoginLink = ""; // Biến để lưu trữ link thực tế để copy
+            let pollingEndTime; // Thời điểm dừng polling
 
-            // Đặt email mặc định
-            emailInput.value = "vietanh94.thk@gmail.com"; 
+            // Đặt email mặc định để hiển thị
+            // emailInput.value = "vietanh94.thk@gmail.com"; // Bỏ dòng này
 
-            loginButton.addEventListener('click', async () => {
-                const email = emailInput.value.trim();
-
-                if (!email) {
-                    displayMessage('Vui lòng nhập địa chỉ email!', 'error', '❌');
-                    hideLoginResult();
-                    return;
-                }
-
+            checkEmailButton.addEventListener('click', async () => {
                 resetUI(); // Reset UI state for a new request
-                setLoading(true, "Đang xử lý..."); // Show spinner and change button text
+                setLoading(true, `Đang kiểm tra email (60s)...`); // Show spinner and change button text
                 
                 // Clear any existing polling interval
                 clearInterval(pollingInterval);
 
-                try {
-                    // Bước 1: Kích hoạt gửi email đăng nhập Perplexity
-                    const triggerResponse = await fetch('/api/trigger_login_email', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ email: email }),
-                    });
+                let attempts = 0;
+                const MAX_POLLING_ATTEMPTS = (CHECK_EMAIL_WINDOW_MINUTES * 60 * 1000) / POLLING_INTERVAL_MS;
+                const startTime = Date.now();
+                pollingEndTime = startTime + (CHECK_EMAIL_WINDOW_MINUTES * 60 * 1000); // Đặt thời gian kết thúc polling
 
-                    const triggerData = await triggerResponse.json();
-
-                    if (triggerData.success) {
-                        displayMessage('Yêu cầu đã được gửi đến Perplexity. Đang chờ liên kết trong email của bạn...', 'info', '📧');
-                        setLoading(true, "Đang chờ link...");
-                        
-                        // Bước 2: Bắt đầu polling để lấy liên kết
-                        pollingStartTime = Date.now();
-                        pollingInterval = setInterval(async () => {
-                            if (Date.now() - pollingStartTime > POLLING_TIMEOUT_MS) {
-                                clearInterval(pollingInterval);
-                                displayMessage('Hết thời gian chờ. Không tìm thấy liên kết đăng nhập. Vui lòng thử lại. ⏰', 'error', '😔');
-                                setLoading(false, "Gửi liên kết đăng nhập");
-                                return;
-                            }
-
-                            const checkResponse = await fetch('/api/check_login_link');
-                            const checkData = await checkResponse.json();
-
-                            if (checkData.found) {
-                                clearInterval(pollingInterval); // Dừng polling
-                                actualLoginLink = checkData.link; // Lưu link thực tế
-                                displayLoginLink(actualLoginLink);
-                                displayMessage('Liên kết đăng nhập Perplexity Pro đã sẵn sàng! ✨', 'success', '🎉');
-                                setLoading(false, "Gửi liên kết đăng nhập");
-                                startCountdown(LINK_EXPIRATION_SECONDS); // Bắt đầu đếm ngược 5 phút
-                            } else {
-                                console.log(checkData.message);
-                                const remainingPollingTime = Math.ceil((POLLING_TIMEOUT_MS - (Date.now() - pollingStartTime)) / 1000);
-                                setLoading(true, `Đang chờ link (${remainingPollingTime}s)...`);
-                                displayMessage(`Đang chờ liên kết đăng nhập... ${remainingPollingTime}s còn lại.`, 'info', '⏳');
-                            }
-                        }, POLLING_INTERVAL_MS);
-
-                    } else {
-                        displayMessage('Lỗi khi kích hoạt: ' + triggerData.message, 'error', '❌');
-                        setLoading(false, "Gửi liên kết đăng nhập");
+                // Bắt đầu polling để lấy liên kết
+                pollingInterval = setInterval(async () => {
+                    if (Date.now() > pollingEndTime) {
+                        clearInterval(pollingInterval);
+                        displayMessage('Hết thời gian chờ. Không tìm thấy liên kết đăng nhập trong 1 phút. Vui lòng thử lại. ⏰', 'error', '😔');
+                        setLoading(false, "Kiểm tra Email để lấy Link");
+                        return;
                     }
-                } catch (error) {
-                    console.error('Lỗi khi gửi yêu cầu:', error);
-                    displayMessage('Đã có lỗi mạng hoặc lỗi server. Vui lòng thử lại.', 'error', '🚨');
-                    setLoading(false, "Gửi liên kết đăng nhập");
-                    clearInterval(pollingInterval); // Đảm bảo dừng polling nếu có lỗi ban đầu
-                }
+
+                    const remainingPollingSeconds = Math.ceil((pollingEndTime - Date.now()) / 1000);
+                    displayMessage(`Đang tìm kiếm liên kết trong email... ${remainingPollingSeconds}s còn lại.`, 'info', '⏳');
+                    setLoading(true, `Đang kiểm tra email (${remainingPollingSeconds}s)...`);
+
+                    try {
+                        const checkResponse = await fetch('/api/check_login_link', {
+                            method: 'POST', // Gửi POST với window_minutes
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ window_minutes: CHECK_EMAIL_WINDOW_MINUTES }),
+                        });
+                        const checkData = await checkResponse.json();
+
+                        if (checkData.found) {
+                            clearInterval(pollingInterval); // Dừng polling
+                            const actualLoginLink = checkData.link;
+                            displayLoginLink(actualLoginLink);
+                            displayMessage('Liên kết đăng nhập Perplexity Pro đã sẵn sàng! ✨', 'success', '🎉');
+                            setLoading(false, "Kiểm tra Email để lấy Link");
+                            startCountdown(LINK_EXPIRATION_SECONDS); // Bắt đầu đếm ngược 5 phút
+                        } else {
+                            console.log(checkData.message);
+                            // Tiếp tục chờ nếu chưa tìm thấy
+                        }
+                    } catch (error) {
+                        console.error('Lỗi khi kiểm tra link:', error);
+                        clearInterval(pollingInterval); // Dừng polling nếu có lỗi API
+                        displayMessage('Đã có lỗi mạng hoặc lỗi server khi kiểm tra email. Vui lòng thử lại.', 'error', '🚨');
+                        setLoading(false, "Kiểm tra Email để lấy Link");
+                    }
+                }, POLLING_INTERVAL_MS);
             });
 
             // Nút Copy Link
             copyLinkButton.addEventListener('click', () => {
-                if (actualLoginLink) {
+                const actualLoginLink = loginLinkElement.href; // Lấy link từ thuộc tính href của <a>
+                if (actualLoginLink && actualLoginLink !== '#') {
                     navigator.clipboard.writeText(actualLoginLink)
                         .then(() => {
                             copyLinkButton.textContent = 'Đã Copy!';
@@ -401,23 +380,30 @@
             function displayMessage(msg, type, icon = '') {
                 messageDiv.innerHTML = `${icon} ${msg}`;
                 messageDiv.className = `message ${type}`;
+                messageDiv.style.opacity = '1';
+                messageDiv.style.transform = 'translateY(0)';
             }
 
             function setLoading(isLoading, buttonMessage) {
-                loginButton.disabled = isLoading;
+                checkEmailButton.disabled = isLoading;
                 spinner.style.display = isLoading ? 'block' : 'none';
                 buttonText.textContent = buttonMessage;
             }
 
             function displayLoginLink(link) {
                 loginLinkElement.href = link;
+                loginLinkElement.style.pointerEvents = 'auto'; // Cho phép click lại
+                loginLinkElement.style.opacity = '1'; // Làm rõ link lại
+                copyLinkButton.disabled = false; // Bật lại copy
                 loginResultDiv.style.display = 'block';
             }
 
             function hideLoginResult() {
                 loginResultDiv.style.display = 'none';
                 loginLinkElement.href = '#';
-                actualLoginLink = ""; // Xóa link đã lưu
+                loginLinkElement.style.pointerEvents = 'none'; // Vô hiệu hóa link
+                loginLinkElement.style.opacity = '0.5'; // Làm mờ link
+                copyLinkButton.disabled = true; // Vô hiệu hóa copy
                 countdownElement.textContent = '5:00'; // Reset countdown text
                 countdownElement.className = 'countdown'; // Reset countdown class
                 clearInterval(countdownInterval); // Dừng đếm ngược cũ
@@ -428,8 +414,10 @@
                 displayMessage('', ''); // Clear message
                 messageDiv.style.opacity = '0'; // Hide message immediately
                 messageDiv.style.transform = 'translateY(10px)';
+                clearInterval(pollingInterval); // Đảm bảo dừng mọi polling cũ
             }
 
+            let countdownInterval;
             function startCountdown(duration) {
                 let timer = duration;
                 clearInterval(countdownInterval); // Ensure previous interval is cleared
@@ -439,26 +427,32 @@
 
                     countdownElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-                    if (timer <= 60) { // Last minute, turn orange
+                    if (timer <= 60 && timer > 20) { // Last minute, turn orange
                         countdownElement.classList.add('warning');
                         countdownElement.classList.remove('danger');
-                    }
-                    if (timer <= 20) { // Last 20 seconds, turn red
+                    } else if (timer <= 20 && timer > 0) { // Last 20 seconds, turn red
                         countdownElement.classList.add('danger');
                         countdownElement.classList.remove('warning');
+                    } else { // Reset color if not in warning/danger zones
+                        countdownElement.classList.remove('warning', 'danger');
                     }
+
                     if (timer <= 0) {
                         clearInterval(countdownInterval);
                         countdownElement.textContent = 'Đã hết hạn!';
                         countdownElement.classList.remove('warning', 'danger');
-                        loginLinkElement.href = '#'; // Vô hiệu hóa link
-                        loginLinkElement.style.pointerEvents = 'none'; // Không cho click nữa
-                        loginLinkElement.style.opacity = '0.5'; // Làm mờ link
-                        copyLinkButton.disabled = true; // Vô hiệu hóa copy
+                        loginLinkElement.href = '#';
+                        loginLinkElement.style.pointerEvents = 'none';
+                        loginLinkElement.style.opacity = '0.5';
+                        copyLinkButton.disabled = true;
                     }
                     timer--;
                 }, 1000);
             }
+
+            // Khởi tạo UI khi tải trang
+            resetUI();
+            setLoading(false, "Kiểm tra Email để lấy Link");
         });
     </script>
 </body>
