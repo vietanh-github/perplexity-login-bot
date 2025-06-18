@@ -55,7 +55,7 @@
             font-size: 2em;
             font-weight: 700;
         }
-        .input-group { /* Giữ lại nếu muốn hiển thị email hiện tại */
+        .input-group {
             margin-bottom: 25px;
             text-align: left;
         }
@@ -79,6 +79,15 @@
             outline: none;
             box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
         }
+        .button-group {
+            display: flex;
+            gap: 10px; /* Khoảng cách giữa các nút */
+            margin-bottom: 25px;
+        }
+        .button-group button {
+            flex-grow: 1; /* Cho phép các nút mở rộng */
+            width: auto; /* Điều chỉnh lại chiều rộng để flexbox quản lý */
+        }
         button {
             background-color: var(--primary-blue);
             color: white;
@@ -88,7 +97,7 @@
             font-size: 1.1em;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease, opacity 0.3s ease;
-            width: 100%;
+            width: 100%; /* Giữ nguyên nếu không nằm trong button-group */
             box-sizing: border-box;
             display: flex;
             align-items: center;
@@ -105,6 +114,15 @@
             cursor: not-allowed;
             transform: none;
             opacity: 0.7;
+        }
+        .copy-email-button {
+            background-color: #6c757d; /* Màu xám */
+        }
+        .copy-email-button:hover {
+            background-color: #5a6268;
+        }
+        .copy-email-button.copied {
+            background-color: #28a745; /* Màu xanh lá khi copy thành công */
         }
 
         /* Spinner CSS */
@@ -258,10 +276,15 @@
             <label for="emailDisplay">Email của bạn (Được cấu hình trên server):</label>
             <input type="email" id="emailDisplay" value="vietanh94.thk@gmail.com" readonly style="background-color: #e9ecef; cursor: default;">
         </div>
-        <button id="checkEmailButton">
-            <span id="buttonText">Kiểm tra Email để lấy Link</span>
-            <div id="spinner" class="spinner"></div>
-        </button>
+        <div class="button-group">
+            <button id="copyEmailButton" class="copy-email-button">
+                <span id="copyEmailButtonText">Copy Email</span>
+            </button>
+            <button id="checkEmailButton">
+                <span id="buttonText">Get login link</span>
+                <div id="spinner" class="spinner"></div>
+            </button>
+        </div>
         <div id="message" class="message"></div>
         
         <div id="loginResult" class="login-result">
@@ -279,8 +302,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // const emailInput = document.getElementById('emailInput'); // Loại bỏ input email
+            const emailDisplay = document.getElementById('emailDisplay');
             const checkEmailButton = document.getElementById('checkEmailButton');
+            const copyEmailButton = document.getElementById('copyEmailButton');
+            const copyEmailButtonText = document.getElementById('copyEmailButtonText');
             const buttonText = document.getElementById('buttonText');
             const spinner = document.getElementById('spinner');
             const messageDiv = document.getElementById('message');
@@ -299,8 +324,8 @@
             let pollingInterval;
             let pollingEndTime; // Thời điểm dừng polling
 
-            // Đặt email mặc định để hiển thị
-            // emailInput.value = "vietanh94.thk@gmail.com"; // Bỏ dòng này
+            // --- Bỏ qua việc gọi API để lấy email, đặt giá trị cứng trực tiếp ---
+            emailDisplay.value = "vietanh94.thk@gmail.com"; 
 
             checkEmailButton.addEventListener('click', async () => {
                 resetUI(); // Reset UI state for a new request
@@ -319,7 +344,7 @@
                     if (Date.now() > pollingEndTime) {
                         clearInterval(pollingInterval);
                         displayMessage('Hết thời gian chờ. Không tìm thấy liên kết đăng nhập trong 1 phút. Vui lòng thử lại. ⏰', 'error', '😔');
-                        setLoading(false, "Kiểm tra Email để lấy Link");
+                        setLoading(false, "Get login link");
                         return;
                     }
 
@@ -342,7 +367,7 @@
                             const actualLoginLink = checkData.link;
                             displayLoginLink(actualLoginLink);
                             displayMessage('Liên kết đăng nhập Perplexity Pro đã sẵn sàng! ✨', 'success', '🎉');
-                            setLoading(false, "Kiểm tra Email để lấy Link");
+                            setLoading(false, "Get login link");
                             startCountdown(LINK_EXPIRATION_SECONDS); // Bắt đầu đếm ngược 5 phút
                         } else {
                             console.log(checkData.message);
@@ -352,9 +377,29 @@
                         console.error('Lỗi khi kiểm tra link:', error);
                         clearInterval(pollingInterval); // Dừng polling nếu có lỗi API
                         displayMessage('Đã có lỗi mạng hoặc lỗi server khi kiểm tra email. Vui lòng thử lại.', 'error', '🚨');
-                        setLoading(false, "Kiểm tra Email để lấy Link");
+                        setLoading(false, "Get login link");
                     }
                 }, POLLING_INTERVAL_MS);
+            });
+
+            // Nút Copy Email
+            copyEmailButton.addEventListener('click', () => {
+                const emailToCopy = emailDisplay.value; // Lấy giá trị từ ô hiển thị
+                if (emailToCopy) {
+                    navigator.clipboard.writeText(emailToCopy)
+                        .then(() => {
+                            copyEmailButtonText.textContent = 'Đã Copy!';
+                            copyEmailButton.classList.add('copied');
+                            setTimeout(() => {
+                                copyEmailButtonText.textContent = 'Copy Email';
+                                copyEmailButton.classList.remove('copied');
+                            }, 2000);
+                        })
+                        .catch(err => {
+                            console.error('Không thể copy email: ', err);
+                            alert('Không thể tự động copy. Vui lòng copy thủ công: ' + emailToCopy);
+                        });
+                }
             });
 
             // Nút Copy Link
@@ -386,54 +431,55 @@
 
             function setLoading(isLoading, buttonMessage) {
                 checkEmailButton.disabled = isLoading;
+                copyEmailButton.disabled = isLoading; // Vô hiệu hóa nút copy email khi đang tải
                 spinner.style.display = isLoading ? 'block' : 'none';
                 buttonText.textContent = buttonMessage;
             }
 
             function displayLoginLink(link) {
                 loginLinkElement.href = link;
-                loginLinkElement.style.pointerEvents = 'auto'; // Cho phép click lại
-                loginLinkElement.style.opacity = '1'; // Làm rõ link lại
-                copyLinkButton.disabled = false; // Bật lại copy
+                loginLinkElement.style.pointerEvents = 'auto';
+                loginLinkElement.style.opacity = '1';
+                copyLinkButton.disabled = false;
                 loginResultDiv.style.display = 'block';
             }
 
             function hideLoginResult() {
                 loginResultDiv.style.display = 'none';
                 loginLinkElement.href = '#';
-                loginLinkElement.style.pointerEvents = 'none'; // Vô hiệu hóa link
-                loginLinkElement.style.opacity = '0.5'; // Làm mờ link
-                copyLinkButton.disabled = true; // Vô hiệu hóa copy
-                countdownElement.textContent = '5:00'; // Reset countdown text
-                countdownElement.className = 'countdown'; // Reset countdown class
-                clearInterval(countdownInterval); // Dừng đếm ngược cũ
+                loginLinkElement.style.pointerEvents = 'none';
+                loginLinkElement.style.opacity = '0.5';
+                copyLinkButton.disabled = true;
+                countdownElement.textContent = '5:00';
+                countdownElement.className = 'countdown';
+                clearInterval(countdownInterval);
             }
 
             function resetUI() {
                 hideLoginResult();
-                displayMessage('', ''); // Clear message
-                messageDiv.style.opacity = '0'; // Hide message immediately
+                displayMessage('', '');
+                messageDiv.style.opacity = '0';
                 messageDiv.style.transform = 'translateY(10px)';
-                clearInterval(pollingInterval); // Đảm bảo dừng mọi polling cũ
+                clearInterval(pollingInterval);
             }
 
             let countdownInterval;
             function startCountdown(duration) {
                 let timer = duration;
-                clearInterval(countdownInterval); // Ensure previous interval is cleared
+                clearInterval(countdownInterval);
                 countdownInterval = setInterval(() => {
                     const minutes = parseInt(timer / 60, 10);
                     const seconds = parseInt(timer % 60, 10);
 
                     countdownElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-                    if (timer <= 60 && timer > 20) { // Last minute, turn orange
+                    if (timer <= 60 && timer > 20) {
                         countdownElement.classList.add('warning');
                         countdownElement.classList.remove('danger');
-                    } else if (timer <= 20 && timer > 0) { // Last 20 seconds, turn red
+                    } else if (timer <= 20 && timer > 0) {
                         countdownElement.classList.add('danger');
                         countdownElement.classList.remove('warning');
-                    } else { // Reset color if not in warning/danger zones
+                    } else {
                         countdownElement.classList.remove('warning', 'danger');
                     }
 
@@ -452,7 +498,7 @@
 
             // Khởi tạo UI khi tải trang
             resetUI();
-            setLoading(false, "Kiểm tra Email để lấy Link");
+            setLoading(false, "Get login link");
         });
     </script>
 </body>

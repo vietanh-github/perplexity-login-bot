@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 import pytz
 import re
 import html
+from dotenv import load_dotenv
+load_dotenv() # Tải biến môi trường từ .env file
 
 # --- Bỏ import từ sign_in.py nếu bạn loại bỏ hoàn toàn việc kích hoạt ---
 # from sign_in import tu_dong_dang_nhap_email_perplexity, PerplexityAuth
@@ -20,8 +22,11 @@ CORS(app)
 # Cảnh báo: KHÔNG AN TOÀN cho ứng dụng công khai!
 # Sử dụng biến môi trường hoặc cấu hình an toàn hơn cho production.
 # Đảm bảo bạn đã cấu hình biến môi trường trên Render
-EMAIL_ADDRESS = "vietanh94.thk@gmail.com" # Thay thế bằng email thật của bạn
-EMAIL_PASSWORD = "owus ncqr fhat bkzn" # Thay thế bằng password email thật của bạn hoặc app password
+# EMAIL_ADDRESS = "vietanh94.thk@gmail.com" # Thay thế bằng email thật của bạn
+# EMAIL_PASSWORD = "owus ncqr fhat bkzn" # Thay thế bằng password email thật của bạn hoặc app password
+EMAIL_ADDRESS = os.environ.get("EMAIL_ADDRESS", "vietanh94.thk@gmail.com") # Lấy từ biến môi trường, cung cấp giá trị mặc định nếu không tìm thấy
+EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "password") # Lấy từ biến môi trường, cung cấp giá trị mặc định nếu không tìm thấy
+
 PERPLEXITY_EMAIL = "team@mail.perplexity.ai"  # Sender email
 # Thời gian tìm kiếm email, sẽ được kiểm soát bởi frontend
 LOGIN_CODE_REQUEST_WINDOW_MINUTES = 5 # Giữ nguyên giá trị này để hàm get_sign_in_link_from_emails hoạt động đúng
