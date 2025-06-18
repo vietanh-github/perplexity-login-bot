@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 import pytz
 import re
 import html
-from dotenv import load_dotenv
-load_dotenv() # Tải biến môi trường từ .env file
+# from dotenv import load_dotenv
+# load_dotenv() # Tải biến môi trường từ .env file
 
 # --- Bỏ import từ sign_in.py nếu bạn loại bỏ hoàn toàn việc kích hoạt ---
 # from sign_in import tu_dong_dang_nhap_email_perplexity, PerplexityAuth
