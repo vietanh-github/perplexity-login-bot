@@ -267,13 +267,45 @@
         .countdown.danger {
             color: #dc3545;
         }
+        /* Style cho phần hướng dẫn */
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        .instructions h3 {
+            color: var(--primary-blue);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .instructions p {
+            margin-bottom: 10px;
+        }
+        .instructions ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        .instructions li {
+            margin-bottom: 15px;
+        }
+        .instructions .step-title {
+            font-weight: 600;
+            color: var(--text-color);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Đăng nhập Perplexity.ai qua Email</h1>
+        <h1>Đăng nhập Perplexity</h1>
         <div class="input-group">
-            <label for="emailDisplay">Email của bạn (Được cấu hình trên server):</label>
+            <label for="emailDisplay">Email:</label>
             <input type="email" id="emailDisplay" value="vietanh94.thk@gmail.com" readonly style="background-color: #e9ecef; cursor: default;">
         </div>
         <div class="button-group">
@@ -281,7 +313,7 @@
                 <span id="copyEmailButtonText">Copy Email</span>
             </button>
             <button id="checkEmailButton">
-                <span id="buttonText">Get login link</span>
+                <span id="buttonText">Get Login Link</span>
                 <div id="spinner" class="spinner"></div>
             </button>
         </div>
@@ -298,7 +330,30 @@
                 Vui lòng mở ngay lập tức để đăng nhập.
             </p>
         </div>
-    </div>
+
+        <div class="instructions">
+            <h3>Hướng Dẫn Đăng Nhập</h3>
+            <ul>
+                <li>
+                    <span class="step-title">➡️ Bước 1: Truy cập</span>
+                    <p>・ Vào trang chủ: <a href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">https://www.perplexity.ai/</a></p>
+                </li>
+                <li>
+                    <span class="step-title">📧 Bước 2: Nhập Email</span>
+                    <p>・ Điền <strong>vietanh94.thk@gmail.com</strong> và chọn "Continue with email".<br>・ (Bạn có thể đóng trang ngay sau bước này).</p>
+                </li>
+                <li>
+                    <span class="step-title">🔗 Bước 3: Yêu cầu Link</span>
+                    <p>・ Nhấn vào nút "Get login link" trên màn hình này.</p>
+                </li>
+                <li>
+                    <span class="step-title">✅ Bước 4: Nhận Link Đăng nhập</span>
+                    <p>・ Sau vài giây, một liên kết đăng nhập sẽ xuất hiện.<br>
+                    Bạn có thể: Copy link để gửi đi hoặc dùng sau, hoặc nhấn vào link để đăng nhập ngay lập tức.</p>
+                </li>
+            </ul>
+        </div>
+        </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
