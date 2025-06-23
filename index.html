@@ -199,6 +199,26 @@
             margin-bottom: 15px;
             display: block;
         }
+        
+        #tokenDisplay {
+            margin-top: 15px;
+            margin-bottom: 15px;
+            text-align: left;
+            display: none;
+        }
+
+        #tokenDisplay span {
+            font-weight: 600;
+        }
+        
+        #tokenValue {
+            background-color: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            word-break: break-all;
+        }
+
 
         .login-link-group {
             display: flex;
@@ -321,8 +341,15 @@
         
         <div id="loginResult" class="login-result">
             <strong>Liên kết đăng nhập của bạn đã sẵn sàng!</strong>
+            
+            <div id="tokenDisplay">
+                <span>Token:</span>
+                <code id="tokenValue"></code>
+            </div>
+
             <div class="login-link-group">
                 <button id="copyLinkButton" class="copy-button">Copy Link</button>
+                <button id="copyTokenButton" class="copy-button" disabled>Copy Token</button>
                 <a id="loginLink" href="#" target="_blank" rel="noopener noreferrer">Đăng nhập Perplexity Pro</a>
             </div>
             <p class="link-note">
@@ -349,7 +376,7 @@
                 <li>
                     <span class="step-title">✅ Bước 4: Nhận Link Đăng nhập</span>
                     <p>・ Sau vài giây, một liên kết đăng nhập sẽ xuất hiện.<br>
-                    Bạn có thể: Copy link để gửi đi hoặc dùng sau, hoặc nhấn vào link để đăng nhập ngay lập tức.</p>
+                    Bạn có thể: Copy link, copy token, hoặc nhấn vào link để đăng nhập ngay lập tức.</p>
                 </li>
             </ul>
         </div>
@@ -368,6 +395,10 @@
             const loginLinkElement = document.getElementById('loginLink');
             const copyLinkButton = document.getElementById('copyLinkButton');
             const countdownElement = document.getElementById('countdown');
+            const tokenDisplayDiv = document.getElementById('tokenDisplay');
+            const tokenValueSpan = document.getElementById('tokenValue');
+            const copyTokenButton = document.getElementById('copyTokenButton');
+
 
             // Cấu hình polling cho việc kiểm tra email
             const CHECK_EMAIL_WINDOW_MINUTES = 1; // Kiểm tra email trong 1 phút
@@ -379,22 +410,19 @@
             let pollingInterval;
             let pollingEndTime; // Thời điểm dừng polling
 
-            // --- Bỏ qua việc gọi API để lấy email, đặt giá trị cứng trực tiếp ---
             emailDisplay.value = "vietanh94.thk@gmail.com"; 
 
             checkEmailButton.addEventListener('click', async () => {
-                resetUI(); // Reset UI state for a new request
-                setLoading(true, `Đang kiểm tra email (60s)...`); // Show spinner and change button text
+                resetUI(); 
+                setLoading(true, `Đang kiểm tra email (60s)...`);
                 
-                // Clear any existing polling interval
                 clearInterval(pollingInterval);
 
                 let attempts = 0;
                 const MAX_POLLING_ATTEMPTS = (CHECK_EMAIL_WINDOW_MINUTES * 60 * 1000) / POLLING_INTERVAL_MS;
                 const startTime = Date.now();
-                pollingEndTime = startTime + (CHECK_EMAIL_WINDOW_MINUTES * 60 * 1000); // Đặt thời gian kết thúc polling
+                pollingEndTime = startTime + (CHECK_EMAIL_WINDOW_MINUTES * 60 * 1000);
 
-                // Bắt đầu polling để lấy liên kết
                 pollingInterval = setInterval(async () => {
                     if (Date.now() > pollingEndTime) {
                         clearInterval(pollingInterval);
@@ -409,37 +437,33 @@
 
                     try {
                         const checkResponse = await fetch('/api/check_login_link', {
-                            method: 'POST', // Gửi POST với window_minutes
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ window_minutes: CHECK_EMAIL_WINDOW_MINUTES }),
                         });
                         const checkData = await checkResponse.json();
 
                         if (checkData.found) {
-                            clearInterval(pollingInterval); // Dừng polling
+                            clearInterval(pollingInterval);
                             const actualLoginLink = checkData.link;
                             displayLoginLink(actualLoginLink);
                             displayMessage('Liên kết đăng nhập Perplexity Pro đã sẵn sàng! ✨', 'success', '🎉');
                             setLoading(false, "Get login link");
-                            startCountdown(LINK_EXPIRATION_SECONDS); // Bắt đầu đếm ngược 5 phút
+                            startCountdown(LINK_EXPIRATION_SECONDS);
                         } else {
                             console.log(checkData.message);
-                            // Tiếp tục chờ nếu chưa tìm thấy
                         }
                     } catch (error) {
                         console.error('Lỗi khi kiểm tra link:', error);
-                        clearInterval(pollingInterval); // Dừng polling nếu có lỗi API
+                        clearInterval(pollingInterval);
                         displayMessage('Đã có lỗi mạng hoặc lỗi server khi kiểm tra email. Vui lòng thử lại.', 'error', '🚨');
                         setLoading(false, "Get login link");
                     }
                 }, POLLING_INTERVAL_MS);
             });
 
-            // Nút Copy Email
             copyEmailButton.addEventListener('click', () => {
-                const emailToCopy = emailDisplay.value; // Lấy giá trị từ ô hiển thị
+                const emailToCopy = emailDisplay.value;
                 if (emailToCopy) {
                     navigator.clipboard.writeText(emailToCopy)
                         .then(() => {
@@ -457,9 +481,8 @@
                 }
             });
 
-            // Nút Copy Link
             copyLinkButton.addEventListener('click', () => {
-                const actualLoginLink = loginLinkElement.href; // Lấy link từ thuộc tính href của <a>
+                const actualLoginLink = loginLinkElement.href;
                 if (actualLoginLink && actualLoginLink !== '#') {
                     navigator.clipboard.writeText(actualLoginLink)
                         .then(() => {
@@ -477,6 +500,25 @@
                 }
             });
 
+            copyTokenButton.addEventListener('click', () => {
+                const tokenToCopy = tokenValueSpan.textContent;
+                if (tokenToCopy) {
+                    navigator.clipboard.writeText(tokenToCopy)
+                        .then(() => {
+                            copyTokenButton.textContent = 'Đã Copy!';
+                            copyTokenButton.classList.add('copied');
+                            setTimeout(() => {
+                                copyTokenButton.textContent = 'Copy Token';
+                                copyTokenButton.classList.remove('copied');
+                            }, 2000);
+                        })
+                        .catch(err => {
+                            console.error('Không thể copy token: ', err);
+                            alert('Không thể tự động copy. Vui lòng copy thủ công: ' + tokenToCopy);
+                        });
+                }
+            });
+
             function displayMessage(msg, type, icon = '') {
                 messageDiv.innerHTML = `${icon} ${msg}`;
                 messageDiv.className = `message ${type}`;
@@ -486,7 +528,7 @@
 
             function setLoading(isLoading, buttonMessage) {
                 checkEmailButton.disabled = isLoading;
-                copyEmailButton.disabled = isLoading; // Vô hiệu hóa nút copy email khi đang tải
+                copyEmailButton.disabled = isLoading;
                 spinner.style.display = isLoading ? 'block' : 'none';
                 buttonText.textContent = buttonMessage;
             }
@@ -496,6 +538,21 @@
                 loginLinkElement.style.pointerEvents = 'auto';
                 loginLinkElement.style.opacity = '1';
                 copyLinkButton.disabled = false;
+                
+                try {
+                    const url = new URL(link);
+                    const token = url.searchParams.get('token');
+                    if (token) {
+                        tokenValueSpan.textContent = token;
+                        tokenDisplayDiv.style.display = 'block';
+                        copyTokenButton.disabled = false;
+                    }
+                } catch (e) {
+                    console.error("Could not parse URL to extract token:", e);
+                    tokenDisplayDiv.style.display = 'none';
+                    copyTokenButton.disabled = true;
+                }
+
                 loginResultDiv.style.display = 'block';
             }
 
@@ -505,6 +562,11 @@
                 loginLinkElement.style.pointerEvents = 'none';
                 loginLinkElement.style.opacity = '0.5';
                 copyLinkButton.disabled = true;
+                
+                tokenDisplayDiv.style.display = 'none';
+                tokenValueSpan.textContent = '';
+                copyTokenButton.disabled = true;
+
                 countdownElement.textContent = '5:00';
                 countdownElement.className = 'countdown';
                 clearInterval(countdownInterval);
@@ -546,12 +608,12 @@
                         loginLinkElement.style.pointerEvents = 'none';
                         loginLinkElement.style.opacity = '0.5';
                         copyLinkButton.disabled = true;
+                        copyTokenButton.disabled = true;
                     }
                     timer--;
                 }, 1000);
             }
 
-            // Khởi tạo UI khi tải trang
             resetUI();
             setLoading(false, "Get login link");
         });
