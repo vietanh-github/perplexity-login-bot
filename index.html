@@ -88,32 +88,33 @@
             flex-grow: 1; /* Cho phép các nút mở rộng */
             width: auto; /* Điều chỉnh lại chiều rộng để flexbox quản lý */
         }
+        button, .copy-button {
+            font-weight: 600;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.2s ease, opacity 0.3s ease;
+        }
+        button:disabled, .copy-button:disabled {
+            background-color: #a0c3f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
         button {
             background-color: var(--primary-blue);
             color: white;
             padding: 14px 25px;
             border: none;
-            border-radius: 8px;
             font-size: 1.1em;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease, opacity 0.3s ease;
             width: 100%; /* Giữ nguyên nếu không nằm trong button-group */
             box-sizing: border-box;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            font-weight: 600;
         }
         button:hover {
             background-color: var(--hover-blue);
             transform: translateY(-2px);
-        }
-        button:disabled {
-            background-color: #a0c3f0;
-            cursor: not-allowed;
-            transform: none;
-            opacity: 0.7;
         }
         .copy-email-button {
             background-color: #6c757d; /* Màu xám */
@@ -153,12 +154,44 @@
             opacity: 0; /* Hidden by default */
             transform: translateY(10px);
             animation: messageFadeIn 0.3s forwards;
+            position: relative;
         }
-
-        @keyframes messageFadeIn {
-            to { opacity: 1; transform: translateY(0); }
+        .message .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
         }
-
+        .message .close-btn:hover {
+            color: #d32f2f;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 16px;
+                max-width: 98vw;
+            }
+            h1 {
+                font-size: 1.3em;
+            }
+            .button-group button, button, .copy-button, .copy-token-button {
+                font-size: 1em;
+                padding: 12px 8px;
+            }
+            .login-result {
+                padding: 10px;
+                font-size: 0.95em;
+            }
+            .instructions {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+        }
         .message.success {
             background-color: var(--success-bg);
             color: var(--primary-blue);
@@ -204,7 +237,9 @@
             margin-top: 15px;
             margin-bottom: 15px;
             text-align: left;
-            display: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         #tokenDisplay span {
@@ -219,55 +254,88 @@
             word-break: break-all;
         }
 
+        .copy-token-button,
+        .copy-button,
+        #copyEmailButton {
+            background: var(--primary-blue);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .copy-token-button:hover,
+        .copy-button:hover,
+        #copyEmailButton:hover {
+            background: var(--hover-blue);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.18);
+        }
+        .copy-token-button.copied,
+        .copy-button.copied,
+        #copyEmailButton.copied {
+            background: #28a745 !important;
+            color: #fff;
+        }
 
         .login-link-group {
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: stretch;
+            flex-direction: row;
+            gap: 10px;
+            align-items: center;
+            justify-content: stretch;
         }
 
         .login-link-group a,
         .login-link-group button {
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .login-link-group a {
+            flex: 1 1 0;
+            margin: 0;
             padding: 10px 15px;
             background-color: var(--primary-blue);
-            color: white;
+            color: #fff;
             border-radius: 6px;
-            text-decoration: none;
             font-weight: 600;
+            font-size: 1em;
             text-align: center;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
-        }
-        .login-link-group a:hover {
-            background-color: var(--hover-blue);
-            transform: translateY(-1px);
-        }
-
-        .copy-button {
-            background-color: #6c757d;
-            color: white;
-            padding: 10px 15px;
+            transition: background-color 0.3s, box-shadow 0.2s, transform 0.2s;
+            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.3s ease;
-            font-weight: 600;
+            min-height: 44px;
         }
-        .copy-button:hover {
-            background-color: #5a6268;
+        .login-link-group a:hover,
+        .login-link-group button:hover {
+            background-color: var(--hover-blue);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.18);
+            transform: translateY(-1px);
+            color: #fff;
+            text-decoration: none;
         }
-        .copy-button:active {
-            transform: scale(0.98);
+        .login-link-group a:active,
+        .login-link-group button:active {
+            transform: scale(0.97);
         }
-        .copy-button.copied {
-            background-color: #28a745;
+        .login-link-group button:disabled {
+            background-color: #a0c3f0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .login-link-group button {
+            flex: 1 1 0;
+            margin: 0;
+        }
+        @media (max-width: 600px) {
+            #tokenDisplay {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            .login-link-group {
+                flex-direction: column;
+                gap: 8px;
+            }
         }
 
         .link-note {
@@ -319,6 +387,11 @@
             font-weight: 600;
             color: var(--text-color);
         }
+
+        button:focus, .copy-button:focus {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 2px;
+        }
     </style>
 </head>
 <body>
@@ -329,15 +402,15 @@
             <input type="email" id="emailDisplay" value="vietanh94.thk@gmail.com" readonly style="background-color: #e9ecef; cursor: default;">
         </div>
         <div class="button-group">
-            <button id="copyEmailButton" class="copy-email-button">
+            <button id="copyEmailButton" class="copy-email-button" type="button" aria-label="Copy email address">
                 <span id="copyEmailButtonText">Copy Email</span>
             </button>
-            <button id="checkEmailButton">
+            <button id="checkEmailButton" type="button" aria-label="Get login link">
                 <span id="buttonText">Get Login Link</span>
                 <div id="spinner" class="spinner"></div>
             </button>
         </div>
-        <div id="message" class="message"></div>
+        <div id="message" class="message" role="alert" aria-live="assertive"></div>
         
         <div id="loginResult" class="login-result">
             <strong>Liên kết đăng nhập của bạn đã sẵn sàng!</strong>
@@ -345,12 +418,12 @@
             <div id="tokenDisplay">
                 <span>Token:</span>
                 <code id="tokenValue"></code>
+                <button id="copyTokenButton" class="copy-token-button" type="button" aria-label="Copy token" disabled>📋 Copy Token</button>
             </div>
 
             <div class="login-link-group">
-                <button id="copyLinkButton" class="copy-button">Copy Link</button>
-                <button id="copyTokenButton" class="copy-button" disabled>Copy Token</button>
-                <a id="loginLink" href="#" target="_blank" rel="noopener noreferrer">Đăng nhập Perplexity Pro</a>
+                <button id="copyLinkButton" class="copy-button" type="button" aria-label="Copy login link">📋 Copy link</button>
+                <a id="loginLink" href="#" target="_blank" rel="noopener noreferrer">Đăng nhập</a>
             </div>
             <p class="link-note">
                 Liên kết này chỉ có hiệu lực trong <span id="countdown" class="countdown">5:00</span> phút.
@@ -384,21 +457,23 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const emailDisplay = document.getElementById('emailDisplay');
-            const checkEmailButton = document.getElementById('checkEmailButton');
-            const copyEmailButton = document.getElementById('copyEmailButton');
-            const copyEmailButtonText = document.getElementById('copyEmailButtonText');
-            const buttonText = document.getElementById('buttonText');
-            const spinner = document.getElementById('spinner');
-            const messageDiv = document.getElementById('message');
-            const loginResultDiv = document.getElementById('loginResult');
-            const loginLinkElement = document.getElementById('loginLink');
-            const copyLinkButton = document.getElementById('copyLinkButton');
-            const countdownElement = document.getElementById('countdown');
-            const tokenDisplayDiv = document.getElementById('tokenDisplay');
-            const tokenValueSpan = document.getElementById('tokenValue');
-            const copyTokenButton = document.getElementById('copyTokenButton');
-
+            // Gom tất cả các element vào object
+            const elements = {
+                emailDisplay: document.getElementById('emailDisplay'),
+                checkEmailButton: document.getElementById('checkEmailButton'),
+                copyEmailButton: document.getElementById('copyEmailButton'),
+                copyEmailButtonText: document.getElementById('copyEmailButtonText'),
+                buttonText: document.getElementById('buttonText'),
+                spinner: document.getElementById('spinner'),
+                messageDiv: document.getElementById('message'),
+                loginResultDiv: document.getElementById('loginResult'),
+                loginLinkElement: document.getElementById('loginLink'),
+                copyLinkButton: document.getElementById('copyLinkButton'),
+                countdownElement: document.getElementById('countdown'),
+                tokenDisplayDiv: document.getElementById('tokenDisplay'),
+                tokenValueSpan: document.getElementById('tokenValue'),
+                copyTokenButton: document.getElementById('copyTokenButton')
+            };
 
             // Cấu hình polling cho việc kiểm tra email
             const CHECK_EMAIL_WINDOW_MINUTES = 1; // Kiểm tra email trong 1 phút
@@ -410,22 +485,22 @@
             let pollingInterval;
             let pollingEndTime; // Thời điểm dừng polling
 
-            emailDisplay.value = "vietanh94.thk@gmail.com"; 
+            elements.emailDisplay.value = "vietanh94.thk@gmail.com"; 
 
-            checkEmailButton.addEventListener('click', async () => {
+            elements.checkEmailButton.addEventListener('click', async () => {
                 resetUI(); 
                 setLoading(true, `Đang kiểm tra email (60s)...`);
                 
                 clearInterval(pollingInterval);
 
                 let attempts = 0;
+                let pollingDelay = POLLING_INTERVAL_MS;
                 const MAX_POLLING_ATTEMPTS = (CHECK_EMAIL_WINDOW_MINUTES * 60 * 1000) / POLLING_INTERVAL_MS;
                 const startTime = Date.now();
                 pollingEndTime = startTime + (CHECK_EMAIL_WINDOW_MINUTES * 60 * 1000);
 
-                pollingInterval = setInterval(async () => {
+                async function poll() {
                     if (Date.now() > pollingEndTime) {
-                        clearInterval(pollingInterval);
                         displayMessage('Hết thời gian chờ. Không tìm thấy liên kết đăng nhập trong 1 phút. Vui lòng thử lại. ⏰', 'error', '😔');
                         setLoading(false, "Get login link");
                         return;
@@ -444,34 +519,40 @@
                         const checkData = await checkResponse.json();
 
                         if (checkData.found) {
-                            clearInterval(pollingInterval);
                             const actualLoginLink = checkData.link;
                             displayLoginLink(actualLoginLink);
                             displayMessage('Liên kết đăng nhập Perplexity Pro đã sẵn sàng! ✨', 'success', '🎉');
                             setLoading(false, "Get login link");
                             startCountdown(LINK_EXPIRATION_SECONDS);
                         } else {
-                            console.log(checkData.message);
+                            attempts++;
+                            pollingDelay = Math.min(pollingDelay * 1.3, 10000); // Tăng dần, tối đa 10s
+                            setTimeout(poll, pollingDelay);
                         }
                     } catch (error) {
                         console.error('Lỗi khi kiểm tra link:', error);
-                        clearInterval(pollingInterval);
-                        displayMessage('Đã có lỗi mạng hoặc lỗi server khi kiểm tra email. Vui lòng thử lại.', 'error', '🚨');
+                        displayMessage('Đã có lỗi mạng hoặc lỗi server khi kiểm tra email. <button id="retryButton">Thử lại</button>', 'error', '🚨');
                         setLoading(false, "Get login link");
+                        // Thêm sự kiện retry
+                        setTimeout(() => {
+                            const retryBtn = document.getElementById('retryButton');
+                            if (retryBtn) {
+                                retryBtn.onclick = () => elements.checkEmailButton.click();
+                            }
+                        }, 100);
                     }
-                }, POLLING_INTERVAL_MS);
+                }
+                poll();
             });
 
-            copyEmailButton.addEventListener('click', () => {
-                const emailToCopy = emailDisplay.value;
+            elements.copyEmailButton.addEventListener('click', () => {
+                const emailToCopy = elements.emailDisplay.value;
                 if (emailToCopy) {
                     navigator.clipboard.writeText(emailToCopy)
                         .then(() => {
-                            copyEmailButtonText.textContent = 'Đã Copy!';
-                            copyEmailButton.classList.add('copied');
+                            elements.copyEmailButton.classList.add('copied');
                             setTimeout(() => {
-                                copyEmailButtonText.textContent = 'Copy Email';
-                                copyEmailButton.classList.remove('copied');
+                                elements.copyEmailButton.classList.remove('copied');
                             }, 2000);
                         })
                         .catch(err => {
@@ -481,16 +562,14 @@
                 }
             });
 
-            copyLinkButton.addEventListener('click', () => {
-                const actualLoginLink = loginLinkElement.href;
+            elements.copyLinkButton.addEventListener('click', () => {
+                const actualLoginLink = elements.loginLinkElement.href;
                 if (actualLoginLink && actualLoginLink !== '#') {
                     navigator.clipboard.writeText(actualLoginLink)
                         .then(() => {
-                            copyLinkButton.textContent = 'Đã Copy!';
-                            copyLinkButton.classList.add('copied');
+                            elements.copyLinkButton.classList.add('copied');
                             setTimeout(() => {
-                                copyLinkButton.textContent = 'Copy Link';
-                                copyLinkButton.classList.remove('copied');
+                                elements.copyLinkButton.classList.remove('copied');
                             }, 2000);
                         })
                         .catch(err => {
@@ -500,16 +579,22 @@
                 }
             });
 
-            copyTokenButton.addEventListener('click', () => {
-                const tokenToCopy = tokenValueSpan.textContent;
+            elements.copyTokenButton.addEventListener('click', () => {
+                const tokenToCopy = elements.tokenValueSpan.textContent;
                 if (tokenToCopy) {
                     navigator.clipboard.writeText(tokenToCopy)
                         .then(() => {
-                            copyTokenButton.textContent = 'Đã Copy!';
-                            copyTokenButton.classList.add('copied');
+                            elements.copyTokenButton.classList.add('copied');
+                            // Đổi màu SVG khi copied
+                            const svg = elements.copyTokenButton.querySelector('svg');
+                            if (svg) {
+                                svg.querySelectorAll('rect').forEach(r => r.setAttribute('stroke', '#28a745'));
+                            }
                             setTimeout(() => {
-                                copyTokenButton.textContent = 'Copy Token';
-                                copyTokenButton.classList.remove('copied');
+                                elements.copyTokenButton.classList.remove('copied');
+                                if (svg) {
+                                    svg.querySelectorAll('rect').forEach(r => r.setAttribute('stroke', '#6c757d'));
+                                }
                             }, 2000);
                         })
                         .catch(err => {
@@ -519,64 +604,73 @@
                 }
             });
 
+            let lastMessage = '';
             function displayMessage(msg, type, icon = '') {
-                messageDiv.innerHTML = `${icon} ${msg}`;
-                messageDiv.className = `message ${type}`;
-                messageDiv.style.opacity = '1';
-                messageDiv.style.transform = 'translateY(0)';
+                if (msg === lastMessage) return; // Không update nếu giống nhau
+                lastMessage = msg;
+                let iconHtml = '';
+                if (type === 'error') iconHtml = '🚨';
+                else if (type === 'success') iconHtml = '🎉';
+                else if (type === 'info') iconHtml = 'ℹ️';
+                // Nút đóng thông báo
+                const closeBtn = `<button class='close-btn' tabindex='0' aria-label='Đóng thông báo' onclick='this.parentNode.style.opacity=0;this.parentNode.style.pointerEvents="none";'>&times;</button>`;
+                elements.messageDiv.innerHTML = `${iconHtml} ${msg} ${closeBtn}`;
+                elements.messageDiv.className = `message ${type}`;
+                elements.messageDiv.style.opacity = '1';
+                elements.messageDiv.style.transform = 'translateY(0)';
             }
 
             function setLoading(isLoading, buttonMessage) {
-                checkEmailButton.disabled = isLoading;
-                copyEmailButton.disabled = isLoading;
-                spinner.style.display = isLoading ? 'block' : 'none';
-                buttonText.textContent = buttonMessage;
+                elements.checkEmailButton.disabled = isLoading;
+                elements.copyEmailButton.disabled = isLoading;
+                elements.spinner.style.display = isLoading ? 'block' : 'none';
+                elements.buttonText.textContent = buttonMessage;
             }
 
             function displayLoginLink(link) {
-                loginLinkElement.href = link;
-                loginLinkElement.style.pointerEvents = 'auto';
-                loginLinkElement.style.opacity = '1';
-                copyLinkButton.disabled = false;
+                elements.loginLinkElement.href = link;
+                elements.loginLinkElement.style.pointerEvents = 'auto';
+                elements.loginLinkElement.style.opacity = '1';
+                elements.copyLinkButton.disabled = false;
                 
                 try {
                     const url = new URL(link);
                     const token = url.searchParams.get('token');
                     if (token) {
-                        tokenValueSpan.textContent = token;
-                        tokenDisplayDiv.style.display = 'block';
-                        copyTokenButton.disabled = false;
+                        elements.tokenValueSpan.textContent = token;
+                        elements.tokenDisplayDiv.style.display = 'block';
+                        elements.copyTokenButton.disabled = false;
                     }
                 } catch (e) {
                     console.error("Could not parse URL to extract token:", e);
-                    tokenDisplayDiv.style.display = 'none';
-                    copyTokenButton.disabled = true;
+                    elements.tokenDisplayDiv.style.display = 'none';
+                    elements.copyTokenButton.disabled = true;
                 }
 
-                loginResultDiv.style.display = 'block';
+                elements.loginResultDiv.style.display = 'block';
             }
 
             function hideLoginResult() {
-                loginResultDiv.style.display = 'none';
-                loginLinkElement.href = '#';
-                loginLinkElement.style.pointerEvents = 'none';
-                loginLinkElement.style.opacity = '0.5';
-                copyLinkButton.disabled = true;
+                elements.loginResultDiv.style.display = 'none';
+                elements.loginLinkElement.href = '#';
+                elements.loginLinkElement.style.pointerEvents = 'none';
+                elements.loginLinkElement.style.opacity = '0.5';
+                elements.copyLinkButton.disabled = true;
                 
-                tokenDisplayDiv.style.display = 'none';
-                tokenValueSpan.textContent = '';
-                copyTokenButton.disabled = true;
+                elements.tokenDisplayDiv.style.display = 'none';
+                elements.tokenValueSpan.textContent = '';
+                elements.copyTokenButton.disabled = true;
 
-                countdownElement.textContent = '5:00';
-                countdownElement.className = 'countdown';
+                elements.countdownElement.textContent = '5:00';
+                elements.countdownElement.className = 'countdown';
                 clearInterval(countdownInterval);
             }
 
             function resetUI() {
                 hideLoginResult();
                 displayMessage('', '');
-                messageDiv.style.opacity = '0';
-                messageDiv.style.transform = 'translateY(10px)';
+                elements.messageDiv.style.opacity = '0';
+                elements.messageDiv.style.transform = 'translateY(10px)';
                 clearInterval(pollingInterval);
             }
 
@@ -588,27 +682,27 @@
                     const minutes = parseInt(timer / 60, 10);
                     const seconds = parseInt(timer % 60, 10);
 
-                    countdownElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                    elements.countdownElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
                     if (timer <= 60 && timer > 20) {
-                        countdownElement.classList.add('warning');
-                        countdownElement.classList.remove('danger');
+                        elements.countdownElement.classList.add('warning');
+                        elements.countdownElement.classList.remove('danger');
                     } else if (timer <= 20 && timer > 0) {
-                        countdownElement.classList.add('danger');
-                        countdownElement.classList.remove('warning');
+                        elements.countdownElement.classList.add('danger');
+                        elements.countdownElement.classList.remove('warning');
                     } else {
-                        countdownElement.classList.remove('warning', 'danger');
+                        elements.countdownElement.classList.remove('warning', 'danger');
                     }
 
                     if (timer <= 0) {
                         clearInterval(countdownInterval);
-                        countdownElement.textContent = 'Đã hết hạn!';
-                        countdownElement.classList.remove('warning', 'danger');
-                        loginLinkElement.href = '#';
-                        loginLinkElement.style.pointerEvents = 'none';
-                        loginLinkElement.style.opacity = '0.5';
-                        copyLinkButton.disabled = true;
-                        copyTokenButton.disabled = true;
+                        elements.countdownElement.textContent = 'Đã hết hạn!';
+                        elements.countdownElement.classList.remove('warning', 'danger');
+                        elements.loginLinkElement.href = '#';
+                        elements.loginLinkElement.style.pointerEvents = 'none';
+                        elements.loginLinkElement.style.opacity = '0.5';
+                        elements.copyLinkButton.disabled = true;
+                        elements.copyTokenButton.disabled = true;
                     }
                     timer--;
                 }, 1000);
